@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:responsi/components/flushbar.dart';
 import 'package:responsi/components/loading.dart';
+import 'package:responsi/components/primary_button.dart';
 import 'package:responsi/components/resto_text_form_field.dart';
 import 'package:responsi/pages/main_page.dart';
-import '../components/primary_button.dart';
-import '../utils/theme.dart';
+import 'package:responsi/pages/register_page.dart';
+import 'package:responsi/utils/theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,9 +20,28 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-
   late bool _isValidation = false;
   late bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfUserExists(); // Check if the user exists
+  }
+
+  // Function to check if the user is registered
+  Future<void> _checkIfUserExists() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedUsername = prefs.getString('username');
+
+    if (savedUsername == null) {
+      // If there are no registered users, navigate to the registration page
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const RegisterPage()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -37,11 +58,13 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const SizedBox(height: 30),
-                    Text('Welcome !',
-                        style: RestoFonts(context).boldQuicksand(
-                          size: 32,
-                          color: RestoColors.primary,
-                        )),
+                    Text(
+                      'Welcome!',
+                      style: RestoFonts(context).boldQuicksand(
+                        size: 32,
+                        color: RestoColors.primary,
+                      ),
+                    ),
                     Text(
                       'Login in to continue',
                       style: RestoFonts(context).semiBoldQuicksand(size: 13, color: RestoColors.black),
@@ -94,20 +117,43 @@ class _LoginPageState extends State<LoginPage> {
                           setState(() {
                             _isLoading = true;
                           });
-                          await Future.delayed((const Duration(seconds: 1)), () {
+
+                          // Retrieve data from SharedPreferences
+                          SharedPreferences prefs = await SharedPreferences.getInstance();
+                          String? savedUsername = prefs.getString('username');
+                          String? savedPassword = prefs.getString('password');
+
+                          // Validate username and password
+                          if (_usernameController.text == savedUsername && _passwordController.text == savedPassword) {
+                            await Future.delayed(const Duration(seconds: 1), () {
+                              setState(() {
+                                _isLoading = false;
+                              });
+                            });
+                            // Navigate to MainPage with username
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (context) => MainPage(username: _usernameController.text), // Sending username
+                              ),
+                            );
+                          } else {
                             setState(() {
                               _isLoading = false;
                             });
-                          });
-
-                          // ignore: unrelated_type_equality_checks
-                          if (_usernameController.text == 'admin' && _passwordController.text == 'admin') {
-                            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const MainPage()));
-                          } else {
-                            alert(context, text: 'Username dan Password salah', icon: Icons.error);
+                            alert(context, text: 'Username or Password is incorrect', icon: Icons.error);
                           }
                         }
                       },
+                    ),
+                    const SizedBox(height: 20),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => const RegisterPage()));
+                      },
+                      child: Text(
+                        "Don't have an account? Register here.",
+                        style: TextStyle(color: RestoColors.primary),
+                      ),
                     ),
                   ],
                 ),
