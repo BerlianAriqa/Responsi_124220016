@@ -6,16 +6,17 @@ import 'package:responsi/pages/home_page.dart';
 import 'package:responsi/pages/login_page.dart';
 import 'package:responsi/utils/theme.dart';
 
-
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  final String username; // Menyimpan username yang diterima
+
+  const MainPage({super.key, required this.username}); // Mengambil username dari constructor
 
   @override
   State<MainPage> createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
-  int _currentIndex = 0; //New
+  int _currentIndex = 0; // New
   late bool _isLoading = false;
 
   void _onItemTapped(int index) {
@@ -36,6 +37,7 @@ class _MainPageState extends State<MainPage> {
       switch (_currentIndex) {
         case 0:
           return const HomePage();
+
         default:
           return const HomePage();
       }
@@ -44,52 +46,48 @@ class _MainPageState extends State<MainPage> {
     return Stack(
       children: [
         Scaffold(
-          appBar: myAppBar(context, title: 'Resto Apps', automaticImplyLeading: false, action: [
-            IconButton(
-              icon: const Icon(
-                Icons.logout,
-                color: RestoColors.red,
-              ),
-              onPressed: () async {
-                setState(() {
-                  _isLoading = true;
-                });
-                await Future.delayed((const Duration(seconds: 2)), () {
+          appBar: myAppBar(
+            context,
+            title: 'Resto Apps',
+            automaticImplyLeading: false,
+            action: [
+              IconButton(
+                icon: const Icon(
+                  Icons.logout,
+                  color: RestoColors.red,
+                ),
+                onPressed: () async {
                   setState(() {
-                    _isLoading = false;
+                    _isLoading = true;
                   });
-                });
-                // ignore: use_build_context_synchronously
-                Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const LoginPage()));
-              },
-            ),
-          ]),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: _currentIndex, //New
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: RestoColors.primary,
-            backgroundColor: Colors.white,
-            elevation: 20,
-            iconSize: 32,
-            selectedFontSize: 12,
-            unselectedFontSize: 12,
-            unselectedItemColor: RestoColors.grey,
-            showSelectedLabels: true,
-            onTap: _onItemTapped,
-            items: const <BottomNavigationBarItem>[
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.help),
-                label: 'Bantuan',
+                  await Future.delayed((const Duration(seconds: 2)), () {
+                    setState(() {
+                      _isLoading = false;
+                    });
+                  });
+                  // ignore: use_build_context_synchronously
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const LoginPage()));
+                },
               ),
             ],
           ),
-          body: body(),
+          body: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Welcome, ${widget.username}!', // Menampilkan pesan sambutan
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Expanded(child: body()), // Membuat body dari halaman
+            ],
+          ),
         ),
-        LoadingScreen(loading: _isLoading)
+        LoadingScreen(loading: _isLoading),
       ],
     );
   }
