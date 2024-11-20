@@ -1,4 +1,9 @@
 # responsi
+Nama : Berlian Ariqa H.A
+NIM : 124220016
+Kelas : SI-C
+
+LINK YOUTUBE : https://youtu.be/v4UJAaolLs4
 
 A new Flutter project.
 
